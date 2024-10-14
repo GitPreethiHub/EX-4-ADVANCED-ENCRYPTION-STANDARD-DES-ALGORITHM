@@ -1,58 +1,90 @@
 # EX-7-ADVANCED-ENCRYPTION-STANDARD-DES-ALGORITHM
 
 ## Aim:
-  To use Advanced Encryption Standard (AES) Algorithm for a practical application like URL Encryption.
-
+  To use Data Encryption Standard (DES) Algorithm for a practical application like URL Encryption.
 ## ALGORITHM: 
-  1. AES is based on a design principle known as a substitution–permutation. 
-  2. AES does not use a Feistel network like DES, it uses variant of Rijndael. 
-  3. It has a fixed block size of 128 bits, and a key size of 128, 192, or 256 bits. 
-  4. AES operates on a 4 × 4 column-major order array of bytes, termed the state
+  1. DES (Data Encryption Standard) is a symmetric-key algorithm for the encryption of data. 
+  2. DES operates on a Feistel network, which breaks the encryption process into 16 rounds.
+  3. The block size of DES is fixed at 64 bits (8 bytes), and it uses a key size of 56 bits (7 bytes). However, keys are often provided as 64-bit keys where 8 bits are used for parity.
+  4. DES processes blocks of data using permutations and substitutions (S-boxes) over several rounds to generate the ciphertext from plaintext.
 
 ## PROGRAM: 
 ```
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
-void xor_encrypt_decrypt(char *input, char *key)
-{
-    int input_len = strlen(input);
-    int key_len = strlen(key);
+typedef uint64_t DES_Block;
 
-    for (int i = 0; i < input_len; i++)
-    {
-        input[i] = input[i] ^ key[i % key_len];
+DES_Block initial_permutation(DES_Block block) {
+    return block;
+}
+
+DES_Block final_permutation(DES_Block block) {
+    return block;
+}
+
+DES_Block feistel_function(DES_Block right_half, DES_Block subkey) {
+    return right_half ^ subkey;
+}
+
+DES_Block des_encrypt(DES_Block plaintext, DES_Block key) {
+    DES_Block permuted_block = initial_permutation(plaintext);
+    DES_Block left = permuted_block >> 32;
+    DES_Block right = permuted_block & 0xFFFFFFFF;
+
+    for (int round = 0; round < 16; round++) {
+        DES_Block temp = right;
+        right = left ^ feistel_function(right, key);
+        left = temp;
+    }
+
+    DES_Block pre_output = (right << 32) | left;
+    DES_Block ciphertext = final_permutation(pre_output);
+
+    return ciphertext;
+}
+
+DES_Block des_decrypt(DES_Block ciphertext, DES_Block key) {
+    return des_encrypt(ciphertext, key);
+}
+
+void process_url_encryption(const char* url, DES_Block key) {
+    size_t len = strlen(url);
+    size_t blocks = len / 8;
+    if (len % 8 != 0) blocks++;
+
+    for (size_t i = 0; i < blocks; i++) {
+        DES_Block plaintext = 0;
+        char chunk[9] = {0};  
+
+        strncpy(chunk, url + i * 8, 8);  
+        memcpy(&plaintext, chunk, sizeof(chunk));  
+
+        DES_Block ciphertext = des_encrypt(plaintext, key);
+        printf("Block %zu Encrypted: %lX\n", i, ciphertext);
+
+        DES_Block decrypted = des_decrypt(ciphertext, key);
+        printf("Block %zu Decrypted: %s\n", i, (char*)&decrypted);
     }
 }
 
 int main() {
-    printf("\n\n\n\n      ***** Ex-7 - Implement DES Encryption and Decryption *****\n\n\n");
+    const char* url = "https://preethi.com"; 
+    DES_Block key = 0x133457799BBCDFF1;
 
-    char url[] = "https://preethi.com";
-    char key[] = "securekey123";
-
-    printf("Original URL: %s\n", url);
-
-    xor_encrypt_decrypt(url, key);
-
-    printf("Encrypted URL (in hex): ");
-    for (int i = 0; i < strlen(url); i++) {
-        printf("%02X", (unsigned char)url[i]);
-    }
-    printf("\n");
-
-    xor_encrypt_decrypt(url, key);
-
-    printf("Decrypted URL: %s\n", url);
+    printf("Encrypting URL: %s\n", url);
+    process_url_encryption(url, key);
 
     return 0;
 }
 ```
 ## OUTPUT:
 
-![image](https://github.com/user-attachments/assets/debcb49a-1a50-43ae-b651-087afc05dad9)
+![image](https://github.com/user-attachments/assets/65852848-56bb-4b8a-b8a8-6e95b3dee4a3)
+
 
 
 
 ## RESULT: 
-Thus Advanced Encryption Standard (AES) Algorithm for a practical application like URL Encryption has been successfully excecuted.
+Thus Data Encryption Standard (DES) Algorithm for a practical application like URL Encryption has been successfully excecuted.
