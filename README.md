@@ -1,4 +1,4 @@
-# EX-7-ADVANCED-ENCRYPTION-STANDARD-DES-ALGORITHM
+# EX-7-DATA-ENCRYPTION-STANDARD-DES-ALGORITHM
 
 ## Aim:
   To use Data Encryption Standard (DES) Algorithm for a practical application like URL Encryption.
